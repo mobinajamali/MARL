@@ -40,7 +40,6 @@ class ActorNetwork(nn.Module):
     def __init__(self, lr_actor, input_dims, fc1_dim, fc2_dim, n_actions, ckp_dir, name):
         super(ActorNetwork, self).__init__()
         self.ckp_file = os.path.join(ckp_dir, name)
-        print(f"Checkpoint file for Actor: {self.ckp_file}")
         self.fc1 = nn.Linear(input_dims, fc1_dim)
         self.fc2 = nn.Linear(fc1_dim, fc2_dim)
         self.pi = nn.Linear(fc2_dim, n_actions)
@@ -61,4 +60,5 @@ class ActorNetwork(nn.Module):
 
     def load_checkpoint(self):
         self.load_state_dict(T.load(self.ckp_file))
+
 
