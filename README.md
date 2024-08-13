@@ -10,7 +10,7 @@ Demo| Results|
 :-----------------------:|:-----------------------:|
 ![](./MADDPG/thumbnails/video-ezgif.com-video-to-gif-converter.gif)| ![](./MADDPG/plots/maddpg.png)| 
 
-
+### :bell: More algorithms and enhancements are coming soon!
 
 ## Installation
 ```bash
