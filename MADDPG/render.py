@@ -8,14 +8,13 @@ from pettingzoo.mpe import simple_speaker_listener_v4
 # test how the agent is doing
 if __name__ == '__main__':
 
-    env = simple_speaker_listener_v4.parallel_env(continuous_actions=True, render_mode="human")
-
+    env = simple_speaker_listener_v4.parallel_env(continuous_actions=True, render_mode="rgb_array")
 
     # define video recording params
-    video_path = './thumbnails/video.mp4'  
+    video_path = './thumbnails/video.avi'  
     frame_width = 640
     frame_height = 480
-    frame_rate = 30.0  
+    frame_rate = 10.0  
 
     _, _ = env.reset()
     n_agents = env.max_num_agents
@@ -30,12 +29,12 @@ if __name__ == '__main__':
     memory = Replay(mem_size=1_000_000, critic_dims=critic_dims, actor_dims=actor_dims, n_actions=n_actions, n_agents=n_agents, batch_size=1024)
  
 
-    n_games = 3
+    n_games = 4
     best_score = 0
     agents.load_checkpoint()
 
-    # initialize video writter
-    fourcc = cv.VideoWriter_fourcc(*'mp4v')  
+    # initialize video writer
+    fourcc = cv.VideoWriter_fourcc(*'XVID')  
     out = cv.VideoWriter(video_path, fourcc, frame_rate, (frame_width, frame_height))
 
     # training loop
@@ -52,17 +51,17 @@ if __name__ == '__main__':
             list_done = list(done.values())
 
             terminal = [d or t for d, t in zip(list_done, list_trunc)]
-            env.render()
-
-            # capture the current screen render and write out
+            
+            # capture the current frame as an RGB array and convert it for video writing
             frame = env.render()
             frame_bgr = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
-            out.write(frame_bgr)
+            frame_resized = cv.resize(frame_bgr, (frame_width, frame_height))
+            out.write(frame_resized)
 
             score += sum(list_reward)
             obs = obs_
-            #time.sleep(0.03)
 
         print(f'episode: {i}, score: {score}')
 
     out.release()
+    cv.destroyAllWindows()
