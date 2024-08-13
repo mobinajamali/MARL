@@ -14,8 +14,6 @@ def main():
     env = simple_speaker_listener_v4.parallel_env(continuous_actions=True)
     _, _ = env.reset()
     n_agents = env.max_num_agents
-    print(f"Number of agents: {n_agents}")
-
     actor_dims = []
     n_actions = []
     for agent in env.agents:
@@ -24,24 +22,19 @@ def main():
     critic_dims = sum(actor_dims) + sum(n_actions) # take action and obs from all the agents
     agents = MultiAgent(actor_dims=actor_dims, critic_dims=critic_dims, n_agents=n_agents, n_actions=n_actions, env=env, ckp_dir='tmp/', gamma=0.95, lr_actor=1e-4, lr_critic=1e-3)
     critic_dims = sum(actor_dims) # only use observations
-    memory = Replay(mem_size=1_000_000, critic_dim=critic_dims, actor_dim=actor_dims, n_actions=n_actions, n_agents=n_agents, batch_size=1024)
-
-    load_checkpoint = False
-    if load_checkpoint:
-        agent.load_models()
+    memory = Replay(mem_size=1_000_000, critic_dims=critic_dims, actor_dims=actor_dims, n_actions=n_actions, n_agents=n_agents, batch_size=1024)
 
     EVAL_INTERVAL = 1000
     MAX_STEPS = 1_000_000
-
-    n_steps = 0
+    total_steps = 0
     episode = 0
     eval_scores, eval_steps = [], []
 
-    score = evaluate(agents, env, episode, n_steps)
+    score = evaluate(agents, env, episode, total_steps)
     eval_scores.append(score)
-    eval_steps.append(n_steps)
+    eval_steps.append(total_steps)
 
-    while n_steps < MAX_STEPS:
+    while total_steps < MAX_STEPS:
         obs, _ = env.reset()
         terminal = [False] * n_agents
         while not any(terminal):
@@ -63,20 +56,17 @@ def main():
             memory.store_transition(list_obs, state, list_actions, list_reward,
                                     list_obs_, state_, terminal)
 
-            if n_steps % 100 == 0:
+            if total_steps % 100 == 0:
                 agents.learn(memory)
             obs = obs_
-            n_steps += 1
+            total_steps += 1
 
-        if n_steps % EVAL_INTERVAL == 0:
-            score = evaluate(agents, env, episode, n_steps)
+        if total_steps % EVAL_INTERVAL == 0:
+            score = evaluate(agents, env, episode, total_steps)
             eval_scores.append(score)
-            eval_steps.append(n_steps)
+            eval_steps.append(total_steps)
 
-        if not load_checkpoint:
-            agents.save_checkpoint()
-
-
+        agents.save_checkpoint()
         episode += 1
     np.save('data/maddpg_scores.npy', np.array(eval_scores))
     np.save('data/maddpg_steps.npy', np.array(eval_steps))
