@@ -2,12 +2,13 @@ from agent import Agent
 
 class MultiAgent:
     '''
-    construc multi-agent domain from the agent class
+    construct multi-agent domain from the agent class
     '''
     def __init__(self, actor_dims, critic_dims, n_actions, env, n_agents,
                  lr_actor=1e-4, lr_critic=1e-3, fc1_dim=64, fc2_dim=64, gamma=0.95, tau=0.01,
-                 ckp_dir='tmp/'):
+                 ckp_dir='tmp/', scenario='simple_speaker_listener'):
         self.agents = []
+        ckp_dir += scenario
         for i in range(n_agents):
             agent = list(env.action_spaces.keys())[i]
             min_action = env.action_space(agent).low
